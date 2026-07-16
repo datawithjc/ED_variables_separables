@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variables Separables — Ecuaciones Diferenciales</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root{
+    --teal:#00bcd4; --teal-dark:#00707f; --teal-bg:#e0f7fa;
+    --navy:#114477; --green:#1e8449; --green-bg:#e9f7ef;
+    --yellow:#ffe94d; --dark:#0f2a33; --ok:#2e9e5b; --bad:#d9534f; --orange:#e67e22;
+    --card:#ffffff; --bg:#f2f8fa;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--dark); min-height:100vh;}
+
+  /* animated header */
+  header{color:#fff; padding:34px 16px 26px; text-align:center; position:relative; overflow:hidden;
+    background:linear-gradient(120deg,#0f2a33,#114477,#00707f,#00bcd4,#114477);
+    background-size:300% 300%; animation:grad 14s ease infinite;}
+  @keyframes grad{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  header h1{font-size:1.8rem; letter-spacing:.4px; position:relative; z-index:2;}
+  header p{opacity:.9; margin-top:6px; font-size:.96rem; position:relative; z-index:2;}
+  header .float{position:absolute; color:rgba(255,255,255,.13); font-size:2.2rem; z-index:1; animation:floaty 9s ease-in-out infinite;}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+
+  nav{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; padding:14px; background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,.08); position:sticky; top:0; z-index:20;}
+  nav button{border:2px solid var(--teal); background:#fff; color:var(--teal-dark); font-weight:700;
+    padding:9px 18px; border-radius:999px; cursor:pointer; font-size:.98rem; transition:.18s;}
+  nav button:hover{background:var(--teal-bg); transform:translateY(-2px);}
+  nav button.active{background:var(--teal); color:#fff; box-shadow:0 3px 12px rgba(0,188,212,.45);}
+
+  main{max-width:920px; margin:0 auto; padding:22px 14px 70px;}
+  section{display:none;}
+  section.visible{display:block;}
+  h2.title{text-align:center; margin:12px 0 6px; color:#0d4b56;}
+  .hint{font-size:.9rem; color:#557; text-align:center; margin-bottom:18px;}
+
+  /* reveal on scroll */
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .5s ease, transform .5s ease;}
+  .reveal.in{opacity:1; transform:none;}
+
+  .card{background:var(--card); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); padding:16px 18px; margin-bottom:16px; border-left:6px solid var(--teal);}
+  .card h3{color:var(--navy); margin-bottom:8px; font-size:1.06rem;}
+  .card.green{border-left-color:var(--green);} .card.green h3{color:var(--green);}
+  .card.warn{border-left-color:var(--bad);} .card.warn h3{color:var(--bad);}
+
+  /* method steps */
+  .steps{display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin:14px 0;}
+  .step{flex:1; min-width:200px; background:var(--teal-bg); border-radius:12px; padding:16px; text-align:center; position:relative; animation:pop .5s ease both;}
+  .step:nth-child(2){animation-delay:.15s;} .step:nth-child(3){animation-delay:.3s;}
+  @keyframes pop{from{opacity:0; transform:scale(.9)} to{opacity:1; transform:scale(1)}}
+  .step .n{width:38px; height:38px; border-radius:50%; background:var(--teal); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:1.2rem;}
+  .step b{color:var(--teal-dark);}
+
+  .eqc{text-align:center; margin:10px 0; font-size:1.05rem;}
+  ul.clean{margin:6px 0 2px 20px;} ul.clean li{margin-bottom:6px;}
+
+  /* animated plot */
+  .plotbox{background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); padding:14px; margin:8px 0 18px;}
+  .plotbtns{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:8px;}
+  .plotbtns button{border:2px solid var(--teal); background:#fff; color:var(--teal-dark); border-radius:8px; padding:6px 12px; cursor:pointer; font-weight:600; font-size:.85rem;}
+  .plotbtns button.on{background:var(--teal); color:#fff;}
+  svg .axis{stroke:#9bb; stroke-width:1.5;}
+  svg .curve{fill:none; stroke:var(--teal-dark); stroke-width:3; stroke-linecap:round;}
+
+  /* example / application cards with reveal */
+  .xnum{display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.5px; background:var(--teal-bg); color:var(--teal-dark); border-radius:6px; padding:3px 9px; margin-bottom:7px;}
+  .xnum.g{background:var(--green-bg); color:var(--green);}
+  .stem{font-size:1.05rem; margin-bottom:10px;}
+  .verbtn{border:2px solid var(--teal); background:#fff; color:var(--teal-dark); font-weight:700; padding:6px 14px; border-radius:8px; cursor:pointer; transition:.15s;}
+  .verbtn:hover{background:var(--teal-bg);}
+  .card.green .verbtn{border-color:var(--green); color:var(--green);}
+  .sol{max-height:0; overflow:hidden; transition:max-height .45s ease; }
+  .sol.open{max-height:1600px;}
+  .sol-inner{margin-top:12px; background:#f6fbfc; border:1px solid #d3e8ec; border-radius:8px; padding:12px 14px; font-size:.97rem;}
+  .card.green .sol-inner{background:var(--green-bg); border-color:#bfe6cf;}
+  .boxed{display:inline-block; border:2px solid var(--navy); border-radius:6px; padding:2px 8px; margin-top:4px;}
+  .stp{margin:7px 0; padding-left:10px; border-left:3px solid #cfe6ec;}
+  .lbl{font-weight:800; color:var(--navy);}
+  .card.green .lbl{color:var(--green);} .card.green .stp{border-left-color:#bfe6cf;}
+  .interp{margin-top:8px; font-style:italic; color:#456;}
+
+  .subhead{margin:26px 0 8px; padding:8px 14px; border-radius:8px; background:var(--navy); color:#fff; font-weight:700;}
+  .subhead.g{background:var(--green);}
+
+  /* controls */
+  .controls{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+  .controls button{border:none; background:var(--teal-dark); color:#fff; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:600;}
+
+  /* quiz */
+  .examhead{background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); padding:16px; margin-bottom:16px; text-align:center;}
+  .timer{font-size:1.6rem; font-weight:800; color:var(--navy);}
+  .scorebar{max-width:560px; margin:12px auto 6px; background:#dce9ec; border-radius:999px; height:14px; overflow:hidden;}
+  .scorebar div{height:100%; width:0%; background:linear-gradient(90deg,#37d0a0,#00bcd4); transition:width .5s;}
+  .qcard{background:var(--card); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); padding:18px; margin-bottom:16px; border-left:6px solid var(--teal);}
+  .qcard .tag{display:inline-block; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; background:var(--teal-bg); color:var(--teal-dark); border-radius:6px; padding:3px 8px; margin-bottom:8px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;}
+  .opts button{border:2px solid #c9dfe4; background:#fbfeff; border-radius:10px; padding:11px 9px; font-size:1.0rem; cursor:pointer; transition:.15s; text-align:left;}
+  .opts button:hover:not(:disabled){border-color:var(--teal); background:var(--teal-bg);}
+  .opts button:disabled{cursor:default;}
+  .opts button.correct{border-color:var(--ok); background:#e4f7ec;}
+  .opts button.wrong{border-color:var(--bad); background:#fdecec;}
+  .fb{margin-top:12px; padding:10px 12px; border-radius:8px; font-size:.95rem; display:none;}
+  .fb.ok{display:block; background:#e4f7ec; border:1px solid #bfe6cf;}
+  .fb.bad{display:block; background:#fdecec; border:1px solid #f2c6c4;}
+  .bigbtn{display:block; margin:10px auto; border:none; background:var(--orange); color:#fff; font-weight:700; font-size:1.05rem; padding:12px 26px; border-radius:10px; cursor:pointer;}
+  .result{text-align:center; font-size:1.15rem; font-weight:700; margin:14px 0; padding:16px; border-radius:12px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.07); display:none;}
+  .result.show{display:block; animation:pop .4s ease;}
+  footer{text-align:center; padding:20px; color:#7a99a1; font-size:.85rem;}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+</style>
+</head>
+<body>
+<h2 class="sr-only">Guía interactiva de ecuaciones diferenciales de variables separables con ejemplos, aplicaciones y un simulacro de parcial.</h2>
+
+<header>
+  <span class="float" style="left:6%;top:20%">∫</span>
+  <span class="float" style="left:88%;top:30%; animation-delay:2s">dy</span>
+  <span class="float" style="left:16%;top:64%; animation-delay:1s">dx</span>
+  <span class="float" style="left:78%;top:66%; animation-delay:3s">e^x</span>
+  <h1>🎓 Ecuaciones Diferenciales de Variables Separables</h1>
+  <p>Curso Vacacional — PhD. Ing. Juan Carlos Acosta Jiménez</p>
+</header>
+
+<nav>
+  <button class="active" data-target="metodo">🧭 Método</button>
+  <button data-target="ejemplos">✍️ Ejemplos resueltos</button>
+  <button data-target="aplicaciones">🌍 Aplicaciones</button>
+  <button data-target="parcial">📝 Simulacro de parcial</button>
+</nav>
+
+<main>
+
+<!-- ===================== MÉTODO ===================== -->
+<section id="metodo" class="visible">
+  <h2 class="title">¿Qué son y cómo se resuelven?</h2>
+  <p class="hint">Las ED de variables separables son la puerta de entrada para modelar el cambio en la naturaleza y la ingeniería.</p>
+
+  <div class="card reveal">
+    <h3>Definición</h3>
+    Una ED de primer orden es de <b>variables separables</b> si puede escribirse como
+    <div class="eqc">\(\dfrac{dy}{dx}=\dfrac{f(x)}{g(y)}\)</div>
+    es decir, si podemos dejar todo lo que depende de \(y\) a un lado y todo lo que depende de \(x\) al otro.
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="n">1</div><b>Separar</b><br>Escribe \(g(y)\,dy=f(x)\,dx\)<br>(las \(y\) con \(dy\), las \(x\) con \(dx\)).</div>
+    <div class="step"><div class="n">2</div><b>Integrar</b><br>\(\displaystyle\int g(y)\,dy=\int f(x)\,dx\)</div>
+    <div class="step"><div class="n">3</div><b>Despejar</b><br>Despeja \(y\) y, si hay condición inicial, halla la constante.</div>
+  </div>
+
+  <div class="card reveal">
+    <h3>Fórmulas que usarás siempre</h3>
+    <div class="eqc">\(\displaystyle\int x^{n}\,dx=\frac{x^{n+1}}{n+1}+C\ (n\neq-1),\quad \int\frac{1}{x}\,dx=\ln|x|+C,\quad \int e^{ax}\,dx=\frac1a e^{ax}+C\)</div>
+    <div class="eqc">\(e^{\ln f}=f,\qquad k\ln f=\ln f^{k},\qquad a^{m}a^{n}=a^{m+n},\qquad a^{-m}=\tfrac{1}{a^{m}}\)</div>
+  </div>
+
+  <div class="plotbox reveal">
+    <h3 style="color:var(--navy); text-align:center; margin-bottom:6px;">Las tres formas del cambio</h3>
+    <div class="plotbtns">
+      <button class="on" data-curve="growth">Crecimiento \(y'=ky\)</button>
+      <button data-curve="decay">Decaimiento \(y'=-ky\)</button>
+      <button data-curve="log">Logístico \(y'=ry(1-\tfrac{y}{K})\)</button>
+    </div>
+    <svg id="plot" viewBox="0 0 460 240" width="100%" style="max-height:260px">
+      <line class="axis" x1="40" y1="210" x2="440" y2="210"/>
+      <line class="axis" x1="40" y1="210" x2="40" y2="20"/>
+      <text x="446" y="214" font-size="12" fill="#789">t</text>
+      <text x="30" y="20" font-size="12" fill="#789">y</text>
+      <path id="curve" class="curve"/>
+    </svg>
+    <p id="plotcap" class="hint" style="margin:0;">Modela poblaciones, usuarios, biomasa: crece sin freno cuando la tasa es proporcional al valor.</p>
+  </div>
+</section>
+
+<!-- ===================== EJEMPLOS ===================== -->
+<section id="ejemplos">
+  <h2 class="title">Ejemplos resueltos</h2>
+  <p class="hint">De lo más simple a lo más complejo. Intenta resolver, luego pulsa «Ver solución».</p>
+  <div class="controls">
+    <button onclick="toggleAll('ej-list',true)">Mostrar todas</button>
+    <button onclick="toggleAll('ej-list',false)">Ocultar todas</button>
+  </div>
+  <div id="ej-list"></div>
+</section>
+
+<!-- ===================== APLICACIONES ===================== -->
+<section id="aplicaciones">
+  <h2 class="title">Aplicaciones reales</h2>
+  <p class="hint">La misma matemática modela seguridad, procesos, sistemas y los temas de moda del mundo.</p>
+  <div class="controls">
+    <button onclick="toggleAll('app-list',true)">Mostrar todas</button>
+    <button onclick="toggleAll('app-list',false)">Ocultar todas</button>
+  </div>
+  <div id="app-list"></div>
+</section>
+
+<!-- ===================== PARCIAL ===================== -->
+<section id="parcial">
+  <h2 class="title">Simulacro de parcial</h2>
+  <p class="hint">10 preguntas tipo examen con retroalimentación inmediata. ¡Cronométrate!</p>
+  <div class="examhead">
+    <div>⏱️ Tiempo: <span class="timer" id="timer">00:00</span></div>
+    <div class="scorebar"><div id="bar"></div></div>
+    <div id="scoretxt" style="font-weight:700;">Puntaje: 0 / 0</div>
+    <button class="bigbtn" id="startbtn" onclick="startExam()">▶️ Comenzar simulacro</button>
+  </div>
+  <div id="result" class="result"></div>
+  <div id="quiz"></div>
+</section>
+
+</main>
+
+<footer>Estudia el método, domina los ejemplos, conecta con el mundo real y prepárate para el parcial ✔</footer>
+
+<script>
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('visible'));
+    document.getElementById(b.dataset.target).classList.add('visible');
+    window.scrollTo({top:0,behavior:'smooth'});
+    revealNow();
+  });
+});
+
+/* ---------- animated plot ---------- */
+function makePath(kind){
+  const x0=40,x1=430,y0=210,ytop=30, N=80; let pts=[];
+  for(let i=0;i<=N;i++){
+    const t=i/N, X=x0+(x1-x0)*t; let v;
+    if(kind==='growth'){ v=Math.exp(2.4*t)/Math.exp(2.4); }
+    else if(kind==='decay'){ v=Math.exp(-2.6*t); }
+    else { const A=12,r=6; v=1/(1+A*Math.exp(-r*t)); v=(v-1/(1+A))/(1-1/(1+A)); }
+    const Y=y0-(y0-ytop)*v; pts.push([X,Y]);
+  }
+  return 'M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L');
+}
+const caps={growth:'Modela poblaciones, usuarios, biomasa: crece sin freno cuando la tasa es proporcional al valor.',
+  decay:'Modela enfriamiento, dilución de gases, decaimiento radiactivo y descarga de capacitores.',
+  log:'Modela adopción de tecnología y viralización: crece rápido y se frena al llegar al límite (curva en S).'};
+function drawCurve(kind){
+  const path=document.getElementById('curve');
+  path.setAttribute('d', makePath(kind));
+  const len=path.getTotalLength();
+  path.style.transition='none';
+  path.style.strokeDasharray=len; path.style.strokeDashoffset=len;
+  path.getBoundingClientRect();
+  path.style.transition='stroke-dashoffset 1.1s ease';
+  path.style.strokeDashoffset=0;
+  document.getElementById('plotcap').textContent=caps[kind];
+}
+document.querySelectorAll('.plotbtns button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.plotbtns button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); drawCurve(b.dataset.curve);
+  });
+});
+
+/* ---------- worked examples data (pasos etiquetados) ---------- */
+const S=(l,c)=>`<div class="stp"><span class="lbl">${l}</span> ${c}</div>`;
+const EJ=[
+ {t:'integración directa', q:"Resolver \\(\\dfrac{dy}{dx}=x\\).",
+  s:S('1. Identificar:',"variable dependiente \\(y\\); variable independiente \\(x\\).")
+   +S('2. Separar:',"el lado \\(y\\) ya está solo: \\(dy=x\\,dx\\).")
+   +S('3. Integrar:',"\\(\\int dy=\\int x\\,dx\\Rightarrow y=\\frac{x^2}{2}+C\\).")
+   +S('4. Solución:',"<span class='boxed'>\\(y=\\frac{x^2}{2}+C\\)</span>")},
+ {t:'integración directa', q:"Resolver \\(\\dfrac{dy}{dx}=6x^2-4\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\).")
+   +S('2. Separar:',"\\(dy=(6x^2-4)\\,dx\\).")
+   +S('3. Integrar:',"\\(y=\\int(6x^2-4)\\,dx=2x^3-4x+C\\).")
+   +S('4. Solución:',"<span class='boxed'>\\(y=2x^3-4x+C\\)</span>")},
+ {t:'crecimiento exponencial', q:"Resolver \\(\\dfrac{dy}{dx}=y\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\).")
+   +S('2. Separar:',"dividimos entre \\(y\\): \\(\\frac{dy}{y}=dx\\).")
+   +S('3. Integrar:',"\\(\\ln|y|=x+C\\).")
+   +S('4. Despejar:',"aplicamos \\(e^{(\\cdot)}\\): \\(y=e^{x+C}=e^Ce^x=C_1e^x\\).")
+   +S('5. Solución:',"<span class='boxed'>\\(y=C_1e^{x}\\)</span>")},
+ {t:'decaimiento', q:"Resolver \\(\\dfrac{dy}{dx}=-2y\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\); parámetro \\(k=2\\).")
+   +S('2. Separar:',"\\(\\frac{dy}{y}=-2\\,dx\\).")
+   +S('3. Integrar:',"\\(\\ln|y|=-2x+C\\).")
+   +S('4. Despejar:',"<span class='boxed'>\\(y=C_1e^{-2x}\\)</span>")
+   +"<div class='interp'>Modelo típico de decaimiento: la solución decrece hacia 0.</div>"},
+ {t:'las dos variables', q:"Resolver \\(\\dfrac{dy}{dx}=\\dfrac{x}{y}\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\).")
+   +S('2. Separar:',"multiplicamos por \\(y\\): \\(y\\,dy=x\\,dx\\).")
+   +S('3. Integrar:',"\\(\\frac{y^2}{2}=\\frac{x^2}{2}+C\\).")
+   +S('4. Despejar:',"\\(y^2=x^2+C_1\\Rightarrow\\) <span class='boxed'>\\(y=\\pm\\sqrt{x^2+C_1}\\)</span>")},
+ {t:'producto de funciones', q:"Resolver \\(\\dfrac{dy}{dx}=xy\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\).")
+   +S('2. Separar:',"\\(\\frac{dy}{y}=x\\,dx\\).")
+   +S('3. Integrar:',"\\(\\ln|y|=\\frac{x^2}{2}+C\\).")
+   +S('4. Despejar:',"\\(y=e^{x^2/2}e^C=C_1e^{x^2/2}\\Rightarrow\\) <span class='boxed'>\\(y=C_1e^{x^2/2}\\)</span>")},
+ {t:'potencia de y', q:"Resolver \\(y'=3x^2y^4\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\).")
+   +S('2. Separar:',"llevamos \\(y^4\\) al lado izquierdo: \\(y^{-4}\\,dy=3x^2\\,dx\\).")
+   +S('3. Integrar:',"\\(\\frac{y^{-3}}{-3}=x^3+C\\Rightarrow -\\frac{1}{3y^3}=x^3+C\\).")
+   +S('4. Despejar:',"\\(\\frac{1}{y^3}=C_1-3x^3\\Rightarrow\\) <span class='boxed'>\\(y=\\sqrt[3]{\\frac{1}{C_1-3x^3}}\\)</span>")},
+ {t:'PVI', q:"Resolver \\(y'=-3x^4\\), \\(y(3)=1\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\); condición inicial \\(y(3)=1\\).")
+   +S('2. Separar e integrar:',"\\(dy=-3x^4dx\\Rightarrow y=-\\frac{3x^5}{5}+C\\).")
+   +S('3. Aplicar condición:',"\\(1=-\\frac{3(243)}{5}+C\\Rightarrow C=1+\\frac{729}{5}=\\frac{734}{5}\\).")
+   +S('4. Solución particular:',"<span class='boxed'>\\(y=-\\frac15(3x^5-734)\\)</span>")},
+ {t:'dos exponenciales', q:"Resolver \\(\\dfrac{dy}{dt}=e^{-2t+3y}\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(t\\).")
+   +S('2. Separar:',"\\(e^{-2t+3y}=e^{-2t}e^{3y}\\Rightarrow e^{-3y}\\,dy=e^{-2t}\\,dt\\).")
+   +S('3. Integrar:',"\\(-\\frac13e^{-3y}=-\\frac12e^{-2t}+C\\).")
+   +S('4. Despejar:',"\\(-3y=\\ln(\\frac32e^{-2t}+k)\\Rightarrow\\) <span class='boxed'>\\(y=-\\frac13\\ln(\\frac32e^{-2t}+k)\\)</span>")},
+ {t:'logaritmos', q:"Resolver \\(4tx\\dfrac{dx}{dt}=x^2+1\\).",
+  s:S('1. Identificar:',"dep. \\(x\\); indep. \\(t\\).")
+   +S('2. Separar:',"\\(\\frac{x\\,dx}{x^2+1}=\\frac{dt}{4t}\\).")
+   +S('3. Integrar:',"con \\(u=x^2+1\\): \\(\\frac12\\ln(x^2+1)=\\frac14\\ln|t|+C\\).")
+   +S('4. Despejar:',"tras aplicar propiedades: <span class='boxed'>\\(x=\\sqrt{k\\sqrt{t}-1}\\)</span>")},
+ {t:'fracción impropia', q:"Resolver \\(\\dfrac{dy}{dx}=\\dfrac{xy-3y+x-3}{xy+2y-x-2}\\).",
+  s:S('1. Identificar:',"dep. \\(y\\); indep. \\(x\\).")
+   +S('2. Factorizar:',"\\(\\frac{dy}{dx}=\\frac{(x-3)(y+1)}{(x+2)(y-1)}\\).")
+   +S('3. Separar:',"\\(\\frac{y-1}{y+1}\\,dy=\\frac{x-3}{x+2}\\,dx\\); dividimos (fracción impropia): \\(\\int(1-\\frac{2}{y+1})dy=\\int(1-\\frac{5}{x+2})dx\\).")
+   +S('4. Integrar:',"<span class='boxed'>\\(y-2\\ln|y+1|=x-5\\ln|x+2|+C\\)</span> (solución implícita).")},
+ {t:'PVI con arctan', q:"Resolver \\(\\dfrac{2r-1}{t}dr+\\dfrac{r-2r^2}{t^2-1}dt=0\\), \\(r(2)=4\\).",
+  s:S('1. Identificar:',"dep. \\(r\\); indep. \\(t\\); condición \\(r(2)=4\\).")
+   +S('2. Separar:',"\\(\\int\\frac{2r-1}{r-2r^2}dr=-\\int\\frac{t}{t^2-1}dt\\).")
+   +S('3. Integrar:',"izq. \\(=-\\ln r\\); der. (fracciones parciales) \\(=-\\ln(t^2-1)^{1/2}\\).")
+   +S('4. Despejar:',"\\(r=\\frac{\\sqrt{t^2-1}}{C}\\).")
+   +S('5. Aplicar condición:',"\\(4=\\frac{\\sqrt3}{C}\\Rightarrow C=\\frac{\\sqrt3}{4}\\) → <span class='boxed'>\\(r=4\\sqrt{\\frac{t^2-1}{3}}\\)</span>")},
+];
+
+/* ---------- applications data (solución estructurada) ---------- */
+// V=variables, P=parámetros, ED=planteo, SEP=separar, INT=integrar, AP=aplicar, R=respuesta, I=interpretación
+function sol(o){
+  let h='';
+  h+=S('Variables:', o.V);
+  h+=S('Parámetros (datos):', o.P);
+  h+=S('Plantear la ED:', o.ED);
+  h+=S('Separar variables:', o.SEP);
+  h+=S('Integrar:', o.INT);
+  if(o.AP) h+=S('Aplicar condiciones:', o.AP);
+  h+=S('Respuesta:', "<b>"+o.R+"</b>");
+  h+="<div class='interp'>💡 "+o.I+"</div>";
+  return h;
+}
+const APPS=[
+ {area:'Seguridad e Higiene', tit:'Ventilación de un espacio confinado',
+  q:"Un equipo de mantenimiento debe entrar a una sala de máquinas donde una fuga dejó monóxido de carbono. Se enciende un extractor que renueva el aire. <b>Como supervisor de seguridad debe firmar el permiso de ingreso: ¿cuánto tiempo debe ventilar antes de autorizar la entrada?</b>",
+  s:sol({V:"dependiente = concentración \\(C\\); independiente = tiempo \\(t\\).",
+   P:"\\(V=200\\,\\text{m}^3\\), \\(C_0=180\\) ppm, límite \\(=25\\) ppm, \\(Q=100\\,\\text{m}^3/\\text{h}\\).",
+   ED:"la concentración baja proporcional a lo que hay: \\(\\frac{dC}{dt}=-\\frac{Q}{V}C=-0.5\\,C\\).",
+   SEP:"\\(\\frac{dC}{C}=-0.5\\,dt\\).",
+   INT:"\\(\\ln C=-0.5t+K\\Rightarrow C(t)=180e^{-0.5t}\\).",
+   AP:"límite \\(C=25\\): \\(25=180e^{-0.5t}\\Rightarrow t=\\frac{\\ln(7.2)}{0.5}\\).",
+   R:"\\(t\\approx 3.95\\) h.",
+   I:"No se puede entrar hasta casi 4 h después: la dilución es exponencial (lenta al final)."})},
+ {area:'Seguridad e Higiene', tit:'Vigilancia biológica de un trabajador',
+  q:"A un operario expuesto a un metal pesado se le retira de su puesto; el organismo elimina el tóxico gradualmente. <b>¿Cuántos días de reposo laboral debe recomendar el médico antes de reintegrarlo?</b>",
+  s:sol({V:"dependiente = concentración en sangre \\(C\\); independiente = tiempo \\(t\\) (días).",
+   P:"\\(C_0=40\\,\\mu g/dL\\), tasa \\(k=0.03\\,\\text{d\\'ia}^{-1}\\), objetivo \\(=10\\,\\mu g/dL\\).",
+   ED:"\\(\\frac{dC}{dt}=-kC=-0.03\\,C\\).",
+   SEP:"\\(\\frac{dC}{C}=-0.03\\,dt\\).",
+   INT:"\\(C(t)=40e^{-0.03t}\\).",
+   AP:"\\(10=40e^{-0.03t}\\Rightarrow e^{-0.03t}=\\tfrac14\\Rightarrow t=\\frac{\\ln4}{0.03}\\).",
+   R:"\\(t\\approx 46\\) días.",
+   I:"La eliminación es lenta; el retiro de la exposición debe ser prolongado."})},
+ {area:'Seguridad e Higiene', tit:'Diseño de un blindaje radiológico',
+  q:"En un laboratorio de rayos X se necesita una pared de plomo que deje pasar como máximo el 10% de la radiación. <b>¿Qué espesor mínimo de plomo debe especificar en el plano?</b>",
+  s:sol({V:"dependiente = intensidad \\(I\\); independiente = espesor \\(x\\) (¡no el tiempo!).",
+   P:"coeficiente \\(\\mu=0.5\\,\\text{cm}^{-1}\\), objetivo \\(I=0.1\\,I_0\\).",
+   ED:"ley de Beer–Lambert: \\(\\frac{dI}{dx}=-\\mu I=-0.5\\,I\\).",
+   SEP:"\\(\\frac{dI}{I}=-0.5\\,dx\\).",
+   INT:"\\(I(x)=I_0e^{-0.5x}\\).",
+   AP:"\\(0.1=e^{-0.5x}\\Rightarrow x=\\frac{\\ln10}{0.5}\\).",
+   R:"\\(x\\approx 4.6\\) cm de plomo.",
+   I:"Aquí la variable independiente es el espesor: el mismo método sirve fuera del tiempo."})},
+ {area:'Seguridad e Higiene', tit:'Riesgo de vapores en una cabina de pintura',
+  q:"Se derrama un solvente inflamable que se evapora poco a poco. Mientras quede líquido hay riesgo de atmósfera explosiva. <b>¿Cuánto tarda en quedar solo 1 kg, y por qué la ventilación no puede apagarse antes?</b>",
+  s:sol({V:"dependiente = masa de solvente \\(m\\); independiente = tiempo \\(t\\) (h).",
+   P:"\\(m_0=5\\) kg, tasa \\(k=0.2\\,\\text{h}^{-1}\\), objetivo \\(m=1\\) kg.",
+   ED:"\\(\\frac{dm}{dt}=-k\\,m=-0.2\\,m\\).",
+   SEP:"\\(\\frac{dm}{m}=-0.2\\,dt\\).",
+   INT:"\\(m(t)=5e^{-0.2t}\\).",
+   AP:"\\(1=5e^{-0.2t}\\Rightarrow t=\\frac{\\ln5}{0.2}\\).",
+   R:"\\(t\\approx 8.05\\) h.",
+   I:"Durante ~8 h sigue liberándose vapor; la ventilación debe mantenerse todo ese tiempo."})},
+ {area:'Seguridad e Higiene', tit:'Protocolo contra quemaduras',
+  q:"Una pieza sale de un horno muy caliente y debe manipularse a mano. La norma exige esperar a que se enfríe hasta 45°C. <b>¿Cuánto debe durar la pausa obligatoria antes de tomarla sin guantes?</b>",
+  s:sol({V:"dependiente = temperatura \\(T\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(T_0=200°C\\), ambiente \\(T_a=25°C\\), dato \\(T(10)=120°C\\), objetivo \\(45°C\\).",
+   ED:"ley de Newton: \\(\\frac{dT}{dt}=-k(T-25)\\).",
+   SEP:"\\(\\frac{dT}{T-25}=-k\\,dt\\).",
+   INT:"\\(T=25+175e^{-kt}\\); con \\(T(10)=120\\Rightarrow k=0.0611\\).",
+   AP:"\\(45=25+175e^{-kt}\\Rightarrow e^{-kt}=\\tfrac{20}{175}\\).",
+   R:"\\(t\\approx 35.5\\) min.",
+   I:"Recién a los ~36 min la pieza es segura al tacto."})},
+ {area:'Seguridad e Higiene', tit:'Gestión de residuos radiactivos en un hospital',
+  q:"Un servicio de medicina nuclear recibe una fuente radiactiva; solo puede desecharse como residuo común cuando su actividad baje lo suficiente. <b>¿Cuántos días debe permanecer en el depósito de decaimiento?</b>",
+  s:sol({V:"dependiente = actividad \\(A\\); independiente = tiempo \\(t\\) (días).",
+   P:"\\(A_0=100\\) mCi, vida media \\(=8\\) días, objetivo \\(=12.5\\) mCi.",
+   ED:"\\(\\frac{dA}{dt}=-\\lambda A\\); de la vida media \\(\\lambda=\\frac{\\ln2}{8}\\).",
+   SEP:"\\(\\frac{dA}{A}=-\\lambda\\,dt\\).",
+   INT:"\\(A(t)=100e^{-\\lambda t}\\).",
+   AP:"\\(12.5=\\tfrac18 A_0\\Rightarrow t=\\frac{\\ln8}{\\lambda}\\).",
+   R:"\\(t\\approx 24\\) días (= 3 vidas medias).",
+   I:"El tiempo de almacenamiento se mide en vidas medias."})},
+ {area:'Seguridad e Higiene', tit:'Vida útil de un respirador',
+  q:"El cartucho de carbón activado de un respirador se satura al absorber un gas. Se considera 'ruptura' (deja de proteger) al 90% de saturación. <b>¿Cuántos minutos de uso continuo puede autorizar antes de exigir el cambio?</b>",
+  s:sol({V:"dependiente = saturación \\(C\\) (%); independiente = tiempo \\(t\\) (min).",
+   P:"\\(C_s=100\\%\\), \\(k=0.1\\,\\text{min}^{-1}\\), \\(C(0)=0\\), objetivo \\(90\\%\\).",
+   ED:"se aproxima a la saturación: \\(\\frac{dC}{dt}=k(C_s-C)=0.1(100-C)\\).",
+   SEP:"\\(\\frac{dC}{100-C}=0.1\\,dt\\).",
+   INT:"\\(-\\ln(100-C)=0.1t+K\\Rightarrow C(t)=100(1-e^{-0.1t})\\).",
+   AP:"\\(90=100(1-e^{-0.1t})\\Rightarrow e^{-0.1t}=0.1\\).",
+   R:"\\(t\\approx 23\\) min.",
+   I:"Pasado ese tiempo el filtro ya no protege; hay que reemplazarlo."})},
+
+ {area:'Ingeniería de Procesos', tit:'Programación del vaciado de un tanque',
+  q:"Antes de una limpieza, un tanque de proceso se vacía por gravedad. El siguiente lote no puede iniciar hasta que esté vacío. <b>¿Cuánto tiempo debe reservar en el cronograma de producción?</b>",
+  s:sol({V:"dependiente = altura del líquido \\(h\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(h_0=4\\) m, \\(k=0.1\\,\\text{m}^{1/2}/\\text{min}\\).",
+   ED:"ley de Torricelli: \\(\\frac{dh}{dt}=-k\\sqrt h=-0.1\\sqrt h\\).",
+   SEP:"\\(h^{-1/2}\\,dh=-0.1\\,dt\\).",
+   INT:"\\(2\\sqrt h=-0.1t+C\\); con \\(h(0)=4\\Rightarrow C=4\\), luego \\(2\\sqrt h=4-0.1t\\).",
+   AP:"vacío cuando \\(h=0\\): \\(0=4-0.1t\\).",
+   R:"\\(t=40\\) min.",
+   I:"El nivel cae como una parábola: rápido al inicio, lento al final."})},
+ {area:'Ingeniería de Procesos', tit:'Conversión en un reactor batch',
+  q:"En un reactor por lotes, un reactivo se consume en una reacción de primer orden. La especificación del producto exige un 90% de conversión. <b>¿Cuánto debe durar el lote?</b>",
+  s:sol({V:"dependiente = concentración \\(C\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(C_0=2\\) mol/L, \\(k=0.05\\,\\text{min}^{-1}\\), objetivo \\(C=0.2\\) (90% consumido).",
+   ED:"\\(\\frac{dC}{dt}=-kC=-0.05\\,C\\).",
+   SEP:"\\(\\frac{dC}{C}=-0.05\\,dt\\).",
+   INT:"\\(C(t)=2e^{-0.05t}\\).",
+   AP:"\\(0.2=2e^{-0.05t}\\Rightarrow e^{-0.05t}=0.1\\).",
+   R:"\\(t\\approx 46\\) min.",
+   I:"Detener antes reduce el rendimiento; el reactor debe operar el tiempo completo."})},
+ {area:'Ingeniería de Procesos', tit:'Cinética de segundo orden',
+  q:"La misma transformación, ahora controlada por una reacción de segundo orden, debe llevarse hasta cierta concentración. <b>¿Cuánto tarda, y por qué se 'frena' más que la de primer orden?</b>",
+  s:sol({V:"dependiente = concentración \\(C\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(C_0=1\\) mol/L, \\(k=0.1\\,\\text{L/(mol·min)}\\), objetivo \\(C=0.25\\).",
+   ED:"\\(\\frac{dC}{dt}=-kC^2\\).",
+   SEP:"\\(\\frac{dC}{C^2}=-k\\,dt\\).",
+   INT:"\\(-\\frac1C\\cdot(-1)=\\frac1C=\\frac1{C_0}+kt\\).",
+   AP:"\\(\\frac1{0.25}=4=1+0.1t\\).",
+   R:"\\(t=30\\) min.",
+   I:"Aquí \\(1/C\\) crece lineal; al bajar \\(C\\), la reacción pierde velocidad más rápido que en 1er orden."})},
+ {area:'Ingeniería de Procesos', tit:'Escalamiento de una fermentación',
+  q:"En un biorreactor la biomasa crece exponencialmente en su fase activa; el proceso se cosecha al alcanzar cierta densidad. <b>¿Cuántas horas dura la fase de crecimiento antes de cosechar?</b>",
+  s:sol({V:"dependiente = biomasa \\(X\\); independiente = tiempo \\(t\\) (h).",
+   P:"\\(X_0=0.5\\) g/L, tasa \\(\\mu=0.3\\,\\text{h}^{-1}\\), cosecha en \\(X=4\\) g/L.",
+   ED:"\\(\\frac{dX}{dt}=\\mu X=0.3\\,X\\).",
+   SEP:"\\(\\frac{dX}{X}=0.3\\,dt\\).",
+   INT:"\\(X(t)=0.5e^{0.3t}\\).",
+   AP:"\\(4=0.5e^{0.3t}\\Rightarrow e^{0.3t}=8\\).",
+   R:"\\(t\\approx 6.93\\) h.",
+   I:"Corresponde a 3 tiempos de duplicación (la biomasa se multiplica por 8)."})},
+ {area:'Ingeniería de Procesos', tit:'Secado industrial de un sólido',
+  q:"Un lote de sólido húmedo se seca acercándose a su humedad de equilibrio. Se empaca al llegar a cierta humedad. <b>¿Cuánto dura el secado, y por qué es imposible secarlo por debajo del equilibrio?</b>",
+  s:sol({V:"dependiente = humedad \\(m\\); independiente = tiempo \\(t\\) (h).",
+   P:"\\(m_0=1.0\\), \\(m_{eq}=0.1\\), \\(k=0.5\\,\\text{h}^{-1}\\), objetivo \\(m=0.3\\).",
+   ED:"\\(\\frac{dm}{dt}=-k(m-m_{eq})=-0.5(m-0.1)\\).",
+   SEP:"\\(\\frac{dm}{m-0.1}=-0.5\\,dt\\).",
+   INT:"\\(m(t)=0.1+0.9e^{-0.5t}\\).",
+   AP:"\\(0.3=0.1+0.9e^{-0.5t}\\Rightarrow e^{-0.5t}=\\tfrac{0.2}{0.9}\\).",
+   R:"\\(t\\approx 3.0\\) h.",
+   I:"La humedad tiende a \\(m_{eq}=0.1\\) pero nunca lo cruza: es una asíntota."})},
+ {area:'Ingeniería de Procesos', tit:'Disolución de un principio activo',
+  q:"En un tanque de mezcla, un sólido se disuelve acercándose a la saturación. El proceso avanza hasta el 80% de saturación. <b>¿Cuánto tiempo de agitación se requiere?</b>",
+  s:sol({V:"dependiente = concentración disuelta \\(C\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(C_s=50\\) g/L, \\(k=0.2\\,\\text{min}^{-1}\\), \\(C_0=0\\), objetivo \\(C=40\\) (80%).",
+   ED:"Noyes–Whitney: \\(\\frac{dC}{dt}=k(C_s-C)=0.2(50-C)\\).",
+   SEP:"\\(\\frac{dC}{50-C}=0.2\\,dt\\).",
+   INT:"\\(C(t)=50(1-e^{-0.2t})\\).",
+   AP:"\\(40=50(1-e^{-0.2t})\\Rightarrow e^{-0.2t}=0.2\\).",
+   R:"\\(t\\approx 8.05\\) min.",
+   I:"Rápido al inicio y lento al acercarse a la saturación."})},
+ {area:'Ingeniería de Procesos', tit:'Diseño de un intercambiador de calor',
+  q:"Un fluido frío se calienta con vapor. El proceso aguas abajo necesita el fluido a cierta temperatura. <b>¿Cuánto tiempo de residencia debe tener el equipo, y por qué nunca alcanzará la temperatura del vapor?</b>",
+  s:sol({V:"dependiente = temperatura \\(T\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(T_0=20°C\\), vapor \\(T_s=80°C\\), dato \\(T(5)=50°C\\), objetivo \\(70°C\\).",
+   ED:"\\(\\frac{dT}{dt}=k(T_s-T)=k(80-T)\\).",
+   SEP:"\\(\\frac{dT}{80-T}=k\\,dt\\).",
+   INT:"\\(T=80-60e^{-kt}\\); con \\(T(5)=50\\Rightarrow k=\\frac{\\ln2}{5}\\).",
+   AP:"\\(70=80-60e^{-kt}\\Rightarrow e^{-kt}=\\tfrac{10}{60}\\).",
+   R:"\\(t\\approx 12.9\\) min.",
+   I:"El fluido solo se aproxima asintóticamente a los 80°C del vapor: nunca los alcanza."})},
+
+ {area:'Ingeniería de Sistemas', tit:'Gestión térmica de un centro de datos',
+  q:"Tras un corte eléctrico, un CPU caliente se enfría en la sala. El plan de contingencia necesita saber su temperatura al reiniciar el servicio. <b>¿Qué temperatura tendrá a los 30 min?</b>",
+  s:sol({V:"dependiente = temperatura \\(T\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(T_0=80°C\\), ambiente \\(T_a=20°C\\), dato \\(T(10)=50°C\\).",
+   ED:"\\(\\frac{dT}{dt}=-k(T-20)\\).",
+   SEP:"\\(\\frac{dT}{T-20}=-k\\,dt\\).",
+   INT:"\\(T=20+60e^{-kt}\\); con \\(T(10)=50\\Rightarrow k=\\frac{\\ln2}{10}\\).",
+   AP:"\\(T(30)=20+60(\\tfrac12)^3\\).",
+   R:"\\(T=27.5\\) °C.",
+   I:"El mismo modelo describe la descarga de un capacitor \\(RC\\): \\(\\frac{dV}{dt}=-\\frac{V}{RC}\\)."})},
+ {area:'Ingeniería de Sistemas', tit:'Dimensionamiento de infraestructura',
+  q:"Una app, en su fase inicial, duplica su base de usuarios periódicamente. Infraestructura debe provisionar servidores antes de cierto umbral. <b>¿Cuántos días tiene el equipo para escalar la plataforma?</b>",
+  s:sol({V:"dependiente = usuarios \\(U\\); independiente = tiempo \\(t\\) (días).",
+   P:"\\(U_0=5000\\), duplica cada 10 días \\(\\Rightarrow k=\\frac{\\ln2}{10}\\), objetivo \\(U=100\\,000\\).",
+   ED:"\\(\\frac{dU}{dt}=kU\\).",
+   SEP:"\\(\\frac{dU}{U}=k\\,dt\\).",
+   INT:"\\(U(t)=5000e^{kt}\\).",
+   AP:"\\(100000=5000e^{kt}\\Rightarrow e^{kt}=20\\Rightarrow t=\\frac{\\ln20}{k}\\).",
+   R:"\\(t\\approx 43\\) días.",
+   I:"El crecimiento exponencial no espera: hay que anticiparse a la demanda."})},
+ {area:'Ingeniería de Sistemas', tit:'Descarga de un capacitor de seguridad',
+  q:"Al apagar un equipo, un capacitor conserva carga; solo es seguro tocar la placa por debajo de cierto voltaje. <b>¿Cuántos segundos debe esperar el técnico tras apagar?</b>",
+  s:sol({V:"dependiente = voltaje \\(V\\); independiente = tiempo \\(t\\) (s).",
+   P:"\\(RC=1\\) s, \\(V_0=12\\) V, umbral seguro \\(=0.5\\) V.",
+   ED:"\\(\\frac{dV}{dt}=-\\frac{V}{RC}=-V\\).",
+   SEP:"\\(\\frac{dV}{V}=-dt\\).",
+   INT:"\\(V(t)=12e^{-t}\\).",
+   AP:"\\(0.5=12e^{-t}\\Rightarrow t=\\ln24\\).",
+   R:"\\(t\\approx 3.2\\) s.",
+   I:"La constante \\(\\tau=RC\\) fija la velocidad; en pocos \\(\\tau\\) ya es seguro."})},
+ {area:'Ingeniería de Sistemas', tit:'Tiempo de respuesta de un sistema de control',
+  q:"La salida de un sistema de primer orden responde a un escalón acercándose a su valor final. Se considera 'estabilizado' al 80%. <b>¿Cuál es el tiempo de establecimiento?</b>",
+  s:sol({V:"dependiente = salida \\(V\\); independiente = tiempo \\(t\\) (s).",
+   P:"valor final \\(=5\\), \\(\\tau=2\\) s, \\(V(0)=0\\), objetivo \\(V=4\\) (80%).",
+   ED:"\\(\\frac{dV}{dt}=\\frac{5-V}{2}\\).",
+   SEP:"\\(\\frac{dV}{5-V}=\\frac{dt}{2}\\).",
+   INT:"\\(V(t)=5(1-e^{-t/2})\\).",
+   AP:"\\(4=5(1-e^{-t/2})\\Rightarrow e^{-t/2}=0.2\\).",
+   R:"\\(t=2\\ln5\\approx 3.22\\) s.",
+   I:"La salida se aproxima a su valor final sin sobrepasarlo (respuesta sobreamortiguada)."})},
+ {area:'Ingeniería de Sistemas', tit:'Vaciado de una cola de mensajes',
+  q:"Tras una caída, un servicio acumula mensajes en cola y los procesa a una tasa proporcional a los pendientes. El SLA exige bajar el backlog. <b>¿En cuántos minutos se recupera el servicio?</b>",
+  s:sol({V:"dependiente = mensajes en cola \\(N\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(N_0=10\\,000\\), \\(k=0.4\\,\\text{min}^{-1}\\), objetivo \\(N=100\\).",
+   ED:"\\(\\frac{dN}{dt}=-kN=-0.4\\,N\\).",
+   SEP:"\\(\\frac{dN}{N}=-0.4\\,dt\\).",
+   INT:"\\(N(t)=10^4e^{-0.4t}\\).",
+   AP:"\\(100=10^4e^{-0.4t}\\Rightarrow e^{-0.4t}=0.01\\).",
+   R:"\\(t\\approx 11.5\\) min.",
+   I:"La cola se vacía más rápido al inicio, cuando hay más carga acumulada."})},
+ {area:'Ingeniería de Sistemas', tit:'Planeación tecnológica (ley de Moore)',
+  q:"La densidad de transistores por chip se duplica cada dos años. Arquitectura proyecta la próxima década a partir del valor actual. <b>¿Cuántos transistores se esperan en 10 años?</b>",
+  s:sol({V:"dependiente = número de transistores \\(N\\); independiente = tiempo \\(t\\) (años).",
+   P:"\\(N_0=10^9\\) (2020), duplica cada 2 años \\(\\Rightarrow k=\\frac{\\ln2}{2}\\).",
+   ED:"\\(\\frac{dN}{dt}=kN\\).",
+   SEP:"\\(\\frac{dN}{N}=k\\,dt\\).",
+   INT:"\\(N(t)=10^9e^{kt}\\).",
+   AP:"en \\(t=10\\): \\(e^{10k}=2^5=32\\).",
+   R:"\\(N=3.2\\times10^{10}\\) transistores.",
+   I:"10 años equivalen a 5 duplicaciones (×32)."})},
+ {area:'Ingeniería de Sistemas', tit:'Adopción de una plataforma (logístico)',
+  q:"La adopción de un software crece rápido al inicio pero se frena al acercarse al límite del mercado. Marketing quiere el momento de copar la mitad. <b>¿En qué mes se llega a la mitad, y por qué se frena después?</b>",
+  s:sol({V:"dependiente = usuarios \\(P\\); independiente = tiempo \\(t\\) (meses).",
+   P:"capacidad \\(K=100\\,000\\), \\(r=0.5\\,\\text{mes}^{-1}\\), \\(P_0=1000\\).",
+   ED:"logístico: \\(\\frac{dP}{dt}=rP\\left(1-\\frac{P}{K}\\right)\\).",
+   SEP:"\\(\\frac{dP}{P(1-P/K)}=r\\,dt\\) (se resuelve por fracciones parciales).",
+   INT:"\\(P(t)=\\frac{K}{1+Ae^{-rt}}\\), con \\(A=\\frac{K-P_0}{P_0}=99\\).",
+   AP:"mitad \\(P=K/2\\Rightarrow Ae^{-rt}=1\\Rightarrow e^{-0.5t}=\\frac1{99}\\).",
+   R:"\\(t\\approx 9.2\\) meses.",
+   I:"Crece casi exponencial al inicio y se satura al acercarse a \\(K\\): la famosa curva en S."})},
+
+ {area:'Temas de actualidad', tit:'La bebida en la final del Mundial',
+  q:"Un hincha compra una bebida bien fría en un estadio caluroso y quiere saber si le durará fría durante el partido. <b>¿A qué temperatura estará al llegar el medio tiempo (45 min)?</b>",
+  s:sol({V:"dependiente = temperatura \\(T\\); independiente = tiempo \\(t\\) (min).",
+   P:"\\(T_0=5°C\\), gradas \\(T_a=35°C\\), dato \\(T(15)=14°C\\).",
+   ED:"ley de Newton (calentamiento): \\(\\frac{dT}{dt}=-k(T-35)\\).",
+   SEP:"\\(\\frac{dT}{T-35}=-k\\,dt\\).",
+   INT:"\\(T=35-30e^{-kt}\\); con \\(T(15)=14\\Rightarrow e^{-15k}=0.7\\).",
+   AP:"\\(t=45=3\\times15\\Rightarrow e^{-45k}=0.7^3=0.343\\).",
+   R:"\\(T(45)\\approx 24.7\\) °C.",
+   I:"¡La misma ley de Newton que enfría un servidor calienta la bebida! Lo que cambia es el signo de \\(T-T_a\\)."})},
+ {area:'Temas de actualidad', tit:'Crecimiento explosivo de una IA',
+  q:"Una nueva app de inteligencia artificial se vuelve tendencia global y su base de usuarios crece muy rápido. Los inversionistas preguntan cuándo será un fenómeno mundial. <b>¿Cuántas semanas tomará llegar a 100 millones de usuarios?</b>",
+  s:sol({V:"dependiente = usuarios \\(U\\) (millones); independiente = tiempo \\(t\\) (semanas).",
+   P:"\\(U_0=1\\) M, tasa \\(k=0.5\\,\\text{semana}^{-1}\\), objetivo \\(100\\) M.",
+   ED:"\\(\\frac{dU}{dt}=kU=0.5\\,U\\).",
+   SEP:"\\(\\frac{dU}{U}=0.5\\,dt\\).",
+   INT:"\\(U(t)=1\\cdot e^{0.5t}\\).",
+   AP:"\\(100=e^{0.5t}\\Rightarrow t=\\frac{\\ln100}{0.5}\\).",
+   R:"\\(t\\approx 9.2\\) semanas.",
+   I:"El crecimiento viral inicial es exponencial: de 1 a 100 millones en poco más de 2 meses."})},
+ {area:'Temas de actualidad', tit:'Saturación del mercado de IA (logístico)',
+  q:"El mismo producto no puede crecer para siempre: su adopción se satura al acercarse al límite del mercado. <b>¿Cuándo alcanzará la mitad del mercado, y qué significa ese punto de inflexión para la estrategia?</b>",
+  s:sol({V:"dependiente = usuarios \\(P\\) (millones); independiente = tiempo \\(t\\) (meses).",
+   P:"capacidad \\(K=1000\\) M, \\(r=0.4\\,\\text{mes}^{-1}\\), \\(P_0=100\\) M.",
+   ED:"logístico: \\(\\frac{dP}{dt}=rP\\left(1-\\frac{P}{K}\\right)\\).",
+   SEP:"\\(\\frac{dP}{P(1-P/K)}=r\\,dt\\) (fracciones parciales).",
+   INT:"\\(P(t)=\\frac{K}{1+Ae^{-rt}}\\), \\(A=\\frac{K-P_0}{P_0}=9\\).",
+   AP:"mitad \\(\\Rightarrow Ae^{-rt}=1\\Rightarrow e^{-0.4t}=\\frac19\\).",
+   R:"\\(t\\approx 5.5\\) meses.",
+   I:"Tras el arranque explosivo, la adopción se frena; el punto de inflexión marca el crecimiento máximo."})},
+ {area:'Temas de actualidad', tit:'Un reel que se vuelve viral',
+  q:"Un video corto se comparte de forma que sus vistas se duplican en cortos intervalos mientras es tendencia. Una marca quiere aprovechar el momento. <b>¿Cuántas vistas tendrá a los 2 días?</b>",
+  s:sol({V:"dependiente = vistas \\(V\\); independiente = tiempo \\(t\\) (h).",
+   P:"\\(V_0=500\\), duplica cada 6 h \\(\\Rightarrow k=\\frac{\\ln2}{6}\\), \\(t=48\\) h.",
+   ED:"\\(\\frac{dV}{dt}=kV\\).",
+   SEP:"\\(\\frac{dV}{V}=k\\,dt\\).",
+   INT:"\\(V(t)=500e^{kt}\\).",
+   AP:"en 48 h hay \\(48/6=8\\) duplicaciones: \\(e^{48k}=2^8=256\\).",
+   R:"\\(V=500\\times256=128\\,000\\) vistas.",
+   I:"El 'salto' viral es exponencial; en la realidad termina saturando (logístico)."})},
+ {area:'Temas de actualidad', tit:'Transición hacia autos eléctricos',
+  q:"La flota nacional de autos eléctricos crece siguiendo una curva de adopción con un límite. El ministerio de energía planea la red de carga. <b>¿En cuántos años se llegará a la mitad de la meta?</b>",
+  s:sol({V:"dependiente = número de autos \\(P\\) (millones); independiente = tiempo \\(t\\) (años).",
+   P:"capacidad \\(K=50\\) M, \\(r=0.3\\,\\text{a\\~no}^{-1}\\), \\(P_0=1\\) M, objetivo \\(25\\) M.",
+   ED:"logístico: \\(\\frac{dP}{dt}=rP\\left(1-\\frac{P}{K}\\right)\\).",
+   SEP:"\\(\\frac{dP}{P(1-P/K)}=r\\,dt\\).",
+   INT:"\\(P(t)=\\frac{K}{1+Ae^{-rt}}\\), \\(A=\\frac{K-P_0}{P_0}=49\\).",
+   AP:"mitad \\(\\Rightarrow e^{-0.3t}=\\frac1{49}\\).",
+   R:"\\(t\\approx 13\\) años.",
+   I:"El punto de adopción más rápida ocurre justo en la mitad de la capacidad."})},
+ {area:'Temas de actualidad', tit:'El ciclo de vida de una tendencia viral',
+  q:"El interés por un tema de moda (índice de búsquedas) decae con el tiempo. Un medio digital decide cuánto tiempo cubrir la noticia. <b>¿Cuántos días tardará el interés en caer a un décimo?</b>",
+  s:sol({V:"dependiente = índice de interés \\(S\\); independiente = tiempo \\(t\\) (días).",
+   P:"\\(S_0=100\\), vida media \\(=3\\) días \\(\\Rightarrow k=\\frac{\\ln2}{3}=0.231\\), objetivo \\(S=10\\).",
+   ED:"\\(\\frac{dS}{dt}=-kS\\).",
+   SEP:"\\(\\frac{dS}{S}=-k\\,dt\\).",
+   INT:"\\(S(t)=100e^{-0.231t}\\).",
+   AP:"\\(10=100e^{-0.231t}\\Rightarrow e^{-0.231t}=0.1\\).",
+   R:"\\(t\\approx 10\\) días.",
+   I:"Lo que hoy es tendencia mundial pierde el 90% de su interés en ~10 días."})},
+ {area:'Temas de actualidad', tit:'CO₂ atmosférico y cambio climático',
+  q:"La concentración de CO₂ atmosférico crece un pequeño porcentaje cada año. Los acuerdos climáticos vigilan cierto umbral. <b>¿En qué año se alcanzaría, y por qué un modelo tan simple ya enciende alarmas?</b>",
+  s:sol({V:"dependiente = concentración \\(C\\) (ppm); independiente = tiempo \\(t\\) (años).",
+   P:"\\(C_0=420\\) ppm (2024), tasa \\(k=0.006\\,\\text{a\\~no}^{-1}\\) (0.6%/año), umbral \\(500\\) ppm.",
+   ED:"\\(\\frac{dC}{dt}=kC=0.006\\,C\\).",
+   SEP:"\\(\\frac{dC}{C}=0.006\\,dt\\).",
+   INT:"\\(C(t)=420e^{0.006t}\\).",
+   AP:"\\(500=420e^{0.006t}\\Rightarrow e^{0.006t}=1.19\\).",
+   R:"\\(t\\approx 29\\) años (≈ 2053).",
+   I:"Incluso el modelo exponencial más básico muestra que se cruzaría a mediados de siglo."})},
+];
+
+/* ---------- render examples ---------- */
+function renderCards(list, data, green){
+  const cont=document.getElementById(list);
+  cont.innerHTML=data.map((d,i)=>`
+    <div class="card reveal ${green?'green':''}">
+      <span class="xnum ${green?'g':''}">${green?d.area:('Ejemplo '+(i+1))}</span>
+      ${green&&d.tit?`<h3>${d.tit}</h3>`:''}
+      <div class="stem">${d.q}</div>
+      <button class="verbtn" onclick="toggleSol(this)">Ver solución</button>
+      <div class="sol"><div class="sol-inner">${d.s}</div></div>
+    </div>`).join('');
+  renderKatexIn(cont);
+}
+function toggleSol(btn){
+  const sol=btn.nextElementSibling;
+  sol.classList.toggle('open');
+  btn.textContent=sol.classList.contains('open')?'Ocultar solución':'Ver solución';
+}
+function toggleAll(list,show){
+  document.querySelectorAll('#'+list+' .card').forEach(c=>{
+    const sol=c.querySelector('.sol'), btn=c.querySelector('.verbtn');
+    sol.classList.toggle('open',show);
+    btn.textContent=show?'Ocultar solución':'Ver solución';
+  });
+}
+
+/* ---------- exam quiz ---------- */
+const QZ=[
+ {tag:'Concepto', q:"¿Cuál de estas ED es de variables separables?",
+  o:["\\(\\frac{dy}{dx}=x^2y\\)","\\(\\frac{dy}{dx}=x+y\\)","\\(\\frac{dy}{dx}=x+y^2+xy^2\\) sin factorizar","\\(y''+y=0\\)"], a:0,
+  e:"\\(x^2y\\) se separa: \\(\\frac{dy}{y}=x^2dx\\). Las otras no se separan directamente (o no son de 1er orden)."},
+ {tag:'Solución general', q:"La solución general de \\(\\frac{dy}{dx}=3x^2\\) es:",
+  o:["\\(y=x^3+C\\)","\\(y=6x+C\\)","\\(y=3x^3+C\\)","\\(y=\\frac{x^3}{3}+C\\)"], a:0,
+  e:"\\(\\int 3x^2dx=x^3+C\\)."},
+ {tag:'Exponencial', q:"La solución general de \\(\\frac{dy}{dx}=-4y\\) es:",
+  o:["\\(y=C e^{-4x}\\)","\\(y=Ce^{4x}\\)","\\(y=-4x+C\\)","\\(y=-2x^2+C\\)"], a:0,
+  e:"\\(\\frac{dy}{y}=-4dx\\Rightarrow\\ln|y|=-4x+C\\Rightarrow y=Ce^{-4x}\\)."},
+ {tag:'PVI', q:"Si \\(y'=2x\\) con \\(y(0)=5\\), entonces \\(y(x)=\\)",
+  o:["\\(x^2+5\\)","\\(x^2\\)","\\(2x^2+5\\)","\\(x^2+2\\)"], a:0,
+  e:"\\(y=x^2+C\\); con \\(y(0)=5\\Rightarrow C=5\\)."},
+ {tag:'Separación', q:"Al separar \\(\\frac{dy}{dx}=\\frac{x}{y}\\) se obtiene:",
+  o:["\\(y\\,dy=x\\,dx\\)","\\(\\frac{dy}{y}=x\\,dx\\)","\\(dy=xy\\,dx\\)","\\(\\frac{dy}{x}=y\\,dx\\)"], a:0,
+  e:"Multiplicamos por \\(y\\) y por \\(dx\\): \\(y\\,dy=x\\,dx\\)."},
+ {tag:'Higiene', q:"Como supervisor de seguridad, activas la ventilación de un taller con CO: la concentración cumple \\(C=180e^{-0.5t}\\) (t en horas) y el límite seguro es 25 ppm. ¿Cuánto debes ventilar antes de autorizar el ingreso? (usa \\(\\ln 7.2\\approx1.97\\))",
+  o:["≈ 3.95 h","≈ 1.97 h","≈ 7.2 h","≈ 0.5 h"], a:0,
+  e:"\\(t=\\frac{\\ln(180/25)}{0.5}=\\frac{1.97}{0.5}\\approx3.95\\) h. Recién entonces es seguro entrar."},
+ {tag:'Sistemas', q:"Tras un corte, un CPU se enfría por Newton: \\(T=20+60e^{-kt}\\) con \\(e^{-10k}=\\frac12\\). El plan de contingencia pregunta su temperatura a los 30 min. ¿\\(T(30)\\)?",
+  o:["27.5 °C","35 °C","20 °C","40 °C"], a:0,
+  e:"\\(e^{-30k}=(\\tfrac12)^3=\\tfrac18\\Rightarrow T=20+60\\cdot\\tfrac18=27.5\\)°C."},
+ {tag:'Procesos', q:"En un reactor batch, un reactivo de segundo orden cumple \\(\\frac1C=\\frac1{C_0}+kt\\) con \\(C_0=1\\) mol/L y \\(k=0.1\\). La especificación exige llegar a \\(C=0.25\\). ¿Cuánto dura el lote?",
+  o:["30 min","4 min","10 min","25 min"], a:0,
+  e:"\\(\\frac1{0.25}=4=1+0.1t\\Rightarrow t=30\\) min."},
+ {tag:'Actualidad', q:"La adopción de una IA sigue \\(P=\\frac{K}{1+Ae^{-rt}}\\). Marketing quiere el mes en que se copará la mitad del mercado (\\(P=K/2\\)). Eso ocurre cuando:",
+  o:["\\(Ae^{-rt}=1\\)","\\(Ae^{-rt}=0\\)","\\(e^{-rt}=A\\)","\\(t=0\\)"], a:0,
+  e:"\\(P=K/2\\Rightarrow 1+Ae^{-rt}=2\\Rightarrow Ae^{-rt}=1\\). Ese es el punto de inflexión."},
+ {tag:'Higiene', q:"Un hospital debe almacenar una fuente radiactiva \\(A=A_0e^{-\\lambda t}\\) de vida media 8 días hasta que su actividad caiga a 1/8. ¿Cuántos días debe quedar en el depósito de decaimiento?",
+  o:["24 días (3 vidas medias)","8 días","16 días","3 días"], a:0,
+  e:"1/8 = \\((\\tfrac12)^3\\) → 3 vidas medias = 24 días."},
+];
+
+let examStarted=false, answered={}, timerInt=null, seconds=0;
+function startExam(){
+  if(examStarted) return;
+  examStarted=true; answered={}; seconds=0;
+  document.getElementById('startbtn').style.display='none';
+  document.getElementById('result').classList.remove('show');
+  timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('timer').textContent=m+':'+s; },1000);
+  const quiz=document.getElementById('quiz');
+  quiz.innerHTML=QZ.map((q,qi)=>{
+    const order=shuffle([0,1,2,3]);
+    return `<div class="qcard reveal in"><span class="tag">${qi+1}. ${q.tag}</span><div class="stem">${q.q}</div>
+      <div class="opts">${order.map(oi=>`<button data-q="${qi}" data-o="${oi}">${q.o[oi]}</button>`).join('')}</div>
+      <div class="fb" id="fb-${qi}"></div></div>`;
+  }).join('');
+  renderKatexIn(quiz);
+  quiz.querySelectorAll('.opts button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const qi=+b.dataset.q, oi=+b.dataset.o, q=QZ[qi], card=b.closest('.qcard'), fb=card.querySelector('.fb');
+      card.querySelectorAll('.opts button').forEach(x=>x.disabled=true);
+      if(oi===q.a){ b.classList.add('correct'); fb.className='fb ok'; fb.innerHTML='✅ <b>Correcto.</b> '+q.e; answered[qi]=true; }
+      else{ b.classList.add('wrong'); card.querySelectorAll('.opts button').forEach(x=>{if(+x.dataset.o===q.a)x.classList.add('correct');}); fb.className='fb bad'; fb.innerHTML='❌ <b>Revisa:</b> '+q.e; answered[qi]=false; }
+      renderKatexIn(fb); updateScore();
+    });
+  });
+  updateScore();
+}
+function updateScore(){
+  const done=Object.keys(answered).length, ok=Object.values(answered).filter(v=>v).length, total=QZ.length;
+  document.getElementById('scoretxt').textContent=`Puntaje: ${ok} / ${done} respondidas (de ${total})`;
+  document.getElementById('bar').style.width=(100*ok/total)+'%';
+  if(done===total){
+    clearInterval(timerInt);
+    const pct=Math.round(100*ok/total);
+    const msg=pct>=80?'¡Excelente, listo para el parcial! 🎉':pct>=60?'Vas bien, repasa los que fallaste. 💪':'Sigue practicando, revisa el método y los ejemplos. 📚';
+    const r=document.getElementById('result');
+    r.innerHTML=`Resultado: <b>${ok}/${total}</b> (${pct}%) en ${document.getElementById('timer').textContent}<br>${msg}`;
+    r.classList.add('show');
+  }
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ---------- KaTeX inline renderer ---------- */
+function renderKatexIn(root){
+  if(!window.katex) return;
+  const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null); const nodes=[];
+  while(walk.nextNode()){ if(walk.currentNode.nodeValue.includes('\\(')) nodes.push(walk.currentNode); }
+  nodes.forEach(node=>{
+    const parts=node.nodeValue.split(/\\\((.+?)\\\)/gs);
+    if(parts.length===1) return;
+    const frag=document.createDocumentFragment();
+    parts.forEach((p,i)=>{
+      if(i%2===0){ frag.appendChild(document.createTextNode(p)); }
+      else{ const sp=document.createElement('span'); try{ katex.render(p,sp,{throwOnError:false}); }catch(e){ sp.textContent=p; } frag.appendChild(sp); }
+    });
+    node.parentNode.replaceChild(frag,node);
+  });
+}
+
+/* ---------- reveal on scroll ---------- */
+let io;
+function revealNow(){
+  document.querySelectorAll('section.visible .reveal:not(.in)').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    if(r.top<window.innerHeight-40) el.classList.add('in');
+  });
+}
+window.addEventListener('scroll',revealNow);
+
+/* ---------- init ---------- */
+window.addEventListener('DOMContentLoaded',()=>{
+  const wait=setInterval(()=>{
+    if(window.katex){
+      clearInterval(wait);
+      renderKatexIn(document.getElementById('metodo'));
+      renderCards('ej-list', EJ, false);
+      renderCards('app-list', APPS, true);
+      drawCurve('growth');
+      revealNow();
+    }
+  },50);
+});
+</script>
+</body>
+</html>
